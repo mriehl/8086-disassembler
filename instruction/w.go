@@ -31,7 +31,7 @@ func DecodeW(wSection byte) (W, error) {
 
 	w, ok := ws[wSection]
 	if !ok {
-		return 0, fmt.Errorf("unknown W 0x%X (%s).", wSection, util.RenderBytes([]byte{wSection}))
+		return 0, fmt.Errorf("unknown W 0x%X (%s).", wSection, util.RenderByte(wSection))
 	}
 	return w, nil
 }

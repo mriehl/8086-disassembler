@@ -34,35 +34,35 @@ func (reg Reg) String() string {
 	case AL:
 		return "AL"
 	case CL:
-		return " CL"
+		return "CL"
 	case DL:
-		return " DL"
+		return "DL"
 	case BL:
-		return " BL"
+		return "BL"
 	case AH:
-		return " AH"
+		return "AH"
 	case CH:
-		return " CH"
+		return "CH"
 	case DH:
-		return " DH"
+		return "DH"
 	case BH:
-		return " BH"
+		return "BH"
 	case AX:
-		return " AX"
+		return "AX"
 	case CX:
-		return " CX"
+		return "CX"
 	case DX:
-		return " DX"
+		return "DX"
 	case BX:
-		return " BX"
+		return "BX"
 	case SP:
-		return " SP"
+		return "SP"
 	case BP:
-		return " BP"
+		return "BP"
 	case SI:
-		return " SI"
+		return "SI"
 	case DI:
-		return " DI"
+		return "DI"
 	default:
 		return "Unknown"
 	}
@@ -101,7 +101,7 @@ func DecodeReg(regSection byte, w W) (Reg, error) {
 	}
 
 	if !ok {
-		return 0, fmt.Errorf("unknown reg 0x%X for W=%v (%s).", regSection, w, util.RenderBytes([]byte{regSection}))
+		return 0, fmt.Errorf("unknown reg 0x%X for W=%v (%s).", regSection, w, util.RenderByte(regSection))
 	}
 	return reg, nil
 }

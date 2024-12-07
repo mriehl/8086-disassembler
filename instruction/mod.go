@@ -43,7 +43,7 @@ func DecodeMod(modSection byte) (Mod, error) {
 
 	mod, ok := mods[modSection]
 	if !ok {
-		return 0, fmt.Errorf("unknown mod 0x%X (%s).", modSection, util.RenderBytes([]byte{modSection}))
+		return 0, fmt.Errorf("unknown mod 0x%X (%s).", modSection, util.RenderByte(modSection))
 	}
 	return mod, nil
 }

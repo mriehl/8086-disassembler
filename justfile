@@ -1,5 +1,7 @@
 run: nasm
   go run main.go
+  for file in `ls asm_decoded/*.asm`; do echo Checking $file; diff -y --suppress-common-lines $file ${file/_decoded/}; done
+
 test:
   go test ./...
 nasm:

@@ -8,7 +8,7 @@ import (
 type D int
 
 const (
-	RegIsSource = iota + 1
+	RegIsSource D = iota + 1
 	RegIsDest
 )
 
@@ -31,7 +31,7 @@ func DecodeD(dSection byte) (D, error) {
 
 	d, ok := ds[dSection]
 	if !ok {
-		return 0, fmt.Errorf("unknown D 0x%X (%s).", dSection, util.RenderBytes([]byte{dSection}))
+		return 0, fmt.Errorf("unknown D 0x%X (%s).", dSection, util.RenderByte(dSection))
 	}
 	return d, nil
 }

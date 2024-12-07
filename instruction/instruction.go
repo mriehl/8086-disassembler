@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-type Instruction struct {
+type MovInstruction struct {
 	Raw    []byte
 	Bits   string
 	Opcode Opcode
@@ -16,7 +16,11 @@ type Instruction struct {
 	Dest   interface{}
 }
 
-func DecodeMovInstruction(raw []byte) (*Instruction, error) {
+func (mov *MovInstruction) AsStringInst() string {
+	return fmt.Sprintf("mov %s, %s", mov.Dest, mov.Source)
+}
+
+func DecodeMovInstruction(raw []byte) (*MovInstruction, error) {
 	bits := util.RenderBytes(raw)
 	if len(raw) != 2 {
 		return nil, fmt.Errorf("expected 2 bytes for instruction but got %s", bits)
@@ -47,7 +51,7 @@ func DecodeMovInstruction(raw []byte) (*Instruction, error) {
 		return nil, err
 	}
 
-	inst := &Instruction{
+	inst := &MovInstruction{
 		Raw:    raw,
 		Bits:   bits,
 		Opcode: opcode,
