@@ -25,19 +25,19 @@ func DecodeMovInstruction(raw []byte) (*Instruction, error) {
 	// | ______ _ _ | __  ___ ___ |
 	// | opcode d w | mod reg r/m |
 
-	opcode, err := DecodeOpcode(raw[0])
+	opcode, err := DecodeOpcode(raw[0] >> 2 & 0x3f)
 	if err != nil {
 		return nil, err
 	}
-	mod, err := DecodeMod(raw[1])
+	mod, err := DecodeMod(raw[1] >> 6 & 0x3)
 	if err != nil {
 		return nil, err
 	}
-	w, err := DecodeW(raw[0])
+	w, err := DecodeW(raw[0] & 0x1)
 	if err != nil {
 		return nil, err
 	}
-	d, err := DecodeD(raw[0])
+	d, err := DecodeD(raw[0] >> 1 & 0x1)
 	if err != nil {
 		return nil, err
 	}

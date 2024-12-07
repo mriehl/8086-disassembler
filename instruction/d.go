@@ -23,16 +23,15 @@ func (d D) String() string {
 	}
 }
 
-func DecodeD(b byte) (D, error) {
-	section := b & 0x2
+func DecodeD(dSection byte) (D, error) {
 	ds := map[byte]D{
 		0x0: RegIsSource,
-		0x2: RegIsDest,
+		0x1: RegIsDest,
 	}
 
-	d, ok := ds[section]
+	d, ok := ds[dSection]
 	if !ok {
-		return 0, fmt.Errorf("unknown D 0x%X (%s).", b, util.RenderBytes([]byte{b}))
+		return 0, fmt.Errorf("unknown D 0x%X (%s).", dSection, util.RenderBytes([]byte{dSection}))
 	}
 	return d, nil
 }

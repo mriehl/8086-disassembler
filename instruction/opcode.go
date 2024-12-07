@@ -20,15 +20,15 @@ func (op Opcode) String() string {
 	}
 }
 
-func DecodeOpcode(b byte) (Opcode, error) {
-	section := b & 0xFC
+func DecodeOpcode(opcodeSection byte) (Opcode, error) {
 	codes := map[byte]Opcode{
-		0x88: Mov,
+		// 100010
+		0x22: Mov,
 	}
 
-	opcode, ok := codes[section]
+	opcode, ok := codes[opcodeSection]
 	if !ok {
-		return 0, fmt.Errorf("unknown opcode 0x%X (%s).", b, util.RenderBytes([]byte{b}))
+		return 0, fmt.Errorf("unknown opcode 0x%X (%s).", opcodeSection, util.RenderBytes([]byte{opcodeSection}))
 	}
 	return opcode, nil
 }

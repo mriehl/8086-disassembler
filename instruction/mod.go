@@ -29,22 +29,21 @@ func (mod Mod) String() string {
 	}
 }
 
-func DecodeMod(b byte) (Mod, error) {
-	section := b & 0xC0
+func DecodeMod(modSection byte) (Mod, error) {
 	mods := map[byte]Mod{
 		// 00
-		0x00: MemoryModeNoDisplacement,
+		0x0: MemoryModeNoDisplacement,
 		// 01
-		0x40: MemoryModeDisplacement8,
+		0x1: MemoryModeDisplacement8,
 		// 10
-		0x80: MemoryModeDisplacement16,
+		0x2: MemoryModeDisplacement16,
 		// 11
-		0xC0: RegisterToRegister,
+		0x3: RegisterToRegister,
 	}
 
-	mod, ok := mods[section]
+	mod, ok := mods[modSection]
 	if !ok {
-		return 0, fmt.Errorf("unknown mod 0x%X (%s).", b, util.RenderBytes([]byte{b}))
+		return 0, fmt.Errorf("unknown mod 0x%X (%s).", modSection, util.RenderBytes([]byte{modSection}))
 	}
 	return mod, nil
 }

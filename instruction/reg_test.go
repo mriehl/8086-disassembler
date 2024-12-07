@@ -30,10 +30,10 @@ func TestReg(t *testing.T) {
 	//   ___
 	lower = 0x4
 	wordReg, _ = DecodeReg(lower, Word)
-	assert.Equal(t, AH, wordReg)
+	assert.Equal(t, SP, wordReg)
 
 	byteReg, _ = DecodeReg(lower, Byte)
-	assert.Equal(t, SP, byteReg)
+	assert.Equal(t, AH, byteReg)
 
 	// 111
 	//   ___

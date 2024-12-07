@@ -23,16 +23,15 @@ func (w W) String() string {
 	}
 }
 
-func DecodeW(b byte) (W, error) {
-	section := b & 0x1
+func DecodeW(wSection byte) (W, error) {
 	ws := map[byte]W{
 		0x00: Byte,
 		0x1:  Word,
 	}
 
-	w, ok := ws[section]
+	w, ok := ws[wSection]
 	if !ok {
-		return 0, fmt.Errorf("unknown W 0x%X (%s).", b, util.RenderBytes([]byte{b}))
+		return 0, fmt.Errorf("unknown W 0x%X (%s).", wSection, util.RenderBytes([]byte{wSection}))
 	}
 	return w, nil
 }
