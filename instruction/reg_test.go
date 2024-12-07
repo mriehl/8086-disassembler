@@ -7,7 +7,7 @@ import (
 )
 
 func TestReg(t *testing.T) {
-	// 00000000
+	// 000
 	//   ___
 	var lower byte
 	lower = 0x0
@@ -17,18 +17,27 @@ func TestReg(t *testing.T) {
 	byteReg, _ := DecodeReg(lower, Byte)
 	assert.Equal(t, AL, byteReg)
 
-	// 11011001
+	// 011
 	//   ___
-	lower = 0xD9
+	lower = 0x3
 	wordReg, _ = DecodeReg(lower, Word)
 	assert.Equal(t, BX, wordReg)
 
 	byteReg, _ = DecodeReg(lower, Byte)
 	assert.Equal(t, BL, byteReg)
 
-	// 11111001
+	// 100
 	//   ___
-	lower = 0xFF
+	lower = 0x4
+	wordReg, _ = DecodeReg(lower, Word)
+	assert.Equal(t, AH, wordReg)
+
+	byteReg, _ = DecodeReg(lower, Byte)
+	assert.Equal(t, SP, byteReg)
+
+	// 111
+	//   ___
+	lower = 0x7
 	wordReg, _ = DecodeReg(lower, Word)
 	assert.Equal(t, DI, wordReg)
 

@@ -68,8 +68,7 @@ func (reg Reg) String() string {
 	}
 }
 
-func DecodeReg(b byte, w W) (Reg, error) {
-	section := (b & 0x38) >> 3
+func DecodeReg(regSection byte, w W) (Reg, error) {
 	byteRegs := map[byte]Reg{
 		0x0: AL,
 		0x1: CL,
@@ -94,15 +93,15 @@ func DecodeReg(b byte, w W) (Reg, error) {
 	var reg Reg
 	var ok bool
 	if w == Byte {
-		reg, ok = byteRegs[section]
+		reg, ok = byteRegs[regSection]
 	} else if w == Word {
-		reg, ok = wordRegs[section]
+		reg, ok = wordRegs[regSection]
 	} else {
-		panic(fmt.Errorf("unknown reg type for W=%v reg=0x%X", w, b))
+		panic(fmt.Errorf("unknown reg type for W=%v reg=0x%X", w, regSection))
 	}
 
 	if !ok {
-		return 0, fmt.Errorf("unknown reg 0x%X for W=%v (%s).", b, w, util.RenderBytes([]byte{b}))
+		return 0, fmt.Errorf("unknown reg 0x%X for W=%v (%s).", regSection, w, util.RenderBytes([]byte{regSection}))
 	}
 	return reg, nil
 }
