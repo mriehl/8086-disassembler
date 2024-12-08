@@ -1,7 +1,11 @@
 run: nasm
   go run main.go
-  # FIXME compare reassembled, not deassembled
-  for file in asm_decoded/*.asm; do echo Checking "$file"; diff -y --suppress-common-lines "$file" "${file/_decoded/}"; done
+  for listing in 37 38 39; do \
+    echo Checking re-assembled listing "$listing"; \
+    nasm asm_decoded/$listing.asm; \
+    diff -q asm_decoded/$listing asm/$listing || \
+    diff -y --suppress-common-lines "asm_decoded/$listing.asm" "asm/$listing.asm"; \
+  done
 
 test:
   go test ./...
