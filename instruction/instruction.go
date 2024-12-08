@@ -2,32 +2,45 @@ package instruction
 
 import (
 	"8086-disassembler/util"
+	"bufio"
 	"fmt"
 )
 
-type MovInstruction struct {
-	Raw    []byte
-	Bits   string
-	Opcode Opcode
-	Mod    Mod
-	W      W
-	D      D
-	Source interface{}
-	Dest   interface{}
+type StringerInstruction interface {
+	AsStringInstruction() string
 }
 
-func (mov *MovInstruction) AsStringInst() string {
+type MovInstruction struct {
+	Raw     []byte
+	InstBuf string
+	Opcode  Opcode
+	Mod     Mod
+	W       W
+	D       D
+	Source  interface{}
+	Dest    interface{}
+}
+
+func (mov MovInstruction) AsStringInstruction() string {
 	return fmt.Sprintf("mov %s, %s", mov.Dest, mov.Source)
 }
 
-func DecodeMovInstruction(raw []byte) (*MovInstruction, error) {
-	bits := util.RenderBytes(raw)
-	if len(raw) != 2 {
-		return nil, fmt.Errorf("expected 2 bytes for instruction but got %s", bits)
+func readSubsequentBytes(n int, buf []byte, reader *bufio.Reader) error {
+	remaining := make([]byte, n)
+	_, err := reader.Read(remaining)
+	if err != nil {
+		return err
 	}
+	copy(buf[1:], remaining)
+	return nil
+}
 
+func DecodeMovInstruction(requestInstSize func(int) []byte) (StringerInstruction, error) {
 	// | ______ _ _ | __  ___ ___ |
 	// | opcode d w | mod reg r/m |
+	raw := requestInstSize(2)
+
+	bits := util.RenderBytes(raw)
 
 	opcode, err := DecodeOpcode(raw[0])
 	if err != nil {
@@ -51,13 +64,13 @@ func DecodeMovInstruction(raw []byte) (*MovInstruction, error) {
 		return nil, err
 	}
 
-	inst := &MovInstruction{
-		Raw:    raw,
-		Bits:   bits,
-		Opcode: opcode,
-		Mod:    mod,
-		W:      w,
-		D:      d,
+	inst := MovInstruction{
+		Raw:     raw,
+		InstBuf: bits,
+		Opcode:  opcode,
+		Mod:     mod,
+		W:       w,
+		D:       d,
 	}
 
 	var rm interface{}

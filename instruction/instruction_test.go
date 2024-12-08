@@ -16,17 +16,19 @@ func TestDecodeMov(t *testing.T) {
 		util.FromBitstring("11110011"),
 	}
 
-	instruction, _ := DecodeMovInstruction(raw)
+	instruction, _ := DecodeMovInstruction(func(i int) []byte {
+		return raw
+	})
 	assert.Equal(t,
-		&MovInstruction{
-			Raw:    raw,
-			Bits:   "10001001 11110011",
-			Opcode: Mov,
-			Mod:    RegisterToRegister,
-			D:      RegIsSource,
-			W:      Word,
-			Source: SI,
-			Dest:   BX,
+		MovInstruction{
+			Raw:     raw,
+			InstBuf: "10001001 11110011",
+			Opcode:  Mov,
+			Mod:     RegisterToRegister,
+			D:       RegIsSource,
+			W:       Word,
+			Source:  SI,
+			Dest:    BX,
 		},
 		instruction,
 	)

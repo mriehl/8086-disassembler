@@ -16,8 +16,8 @@ func main() {
 		fmt.Printf("=== Listing %s ===\n", listing)
 		handleListing(listing)
 	}
-
 }
+
 func handleListing(listing string) {
 	file, err := os.Open(listing)
 	if err != nil {
@@ -38,21 +38,46 @@ func handleListing(listing string) {
 		panic(err)
 	}
 
-	buf := make([]byte, 2)
+	// max inst length is 6 byte
+	buf := make([]byte, 6)
+
+	requestInstSize := func(n int) []byte {
+		remaining := make([]byte, n-1)
+		_, err := instruction_reader.Read(remaining)
+		if err != nil {
+			panic(err)
+		}
+		copy(buf[1:], remaining)
+		return buf[:n]
+	}
+
 	for {
-		_, err := instruction_reader.Read(buf)
+		firstByte, err := instruction_reader.ReadByte()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
 			panic(err)
 		}
-		instruction, err := instruction.DecodeMovInstruction(buf)
+		buf[0] = firstByte
+		opcode, err := instruction.DecodeOpcode(firstByte)
+		if err != nil {
+			panic(err)
+		}
+		var currentInst instruction.StringerInstruction
+		switch opcode {
+		case instruction.Mov:
+			currentInst, err = instruction.DecodeMovInstruction(requestInstSize)
+		case instruction.MovImmediateToReg:
+			panic("immediate mov")
+		default:
+			panic(fmt.Errorf("unexpected opcode %s", opcode))
+		}
 		if err != nil {
 			fmt.Printf("\tINVALID: %v\n", err)
 		} else {
-			inst := strings.ToLower(instruction.AsStringInst())
-			fmt.Printf("%s\t from %+v\n", inst, instruction)
+			inst := strings.ToLower(currentInst.AsStringInstruction())
+			fmt.Printf("%s\t from %+v\n", inst, currentInst)
 			_, err = decoded_asm_writer.WriteString(inst + "\n")
 			if err != nil {
 				panic(err)
