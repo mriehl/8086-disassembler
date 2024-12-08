@@ -5,5 +5,4 @@ run: nasm
 test:
   go test ./...
 nasm:
-  nasm asm/37.asm
-  nasm asm/38.asm
+  for file in asm/*.asm; do nasm "$file"; done

@@ -5,11 +5,15 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 func main() {
-	listings := []string{"asm/37", "asm/38"}
+	listings, err := filepath.Glob("asm/*.asm")
+	if err != nil {
+		panic(err)
+	}
 
 	for _, listing := range listings {
 		fmt.Printf("=== Listing %s ===\n", listing)
@@ -18,14 +22,14 @@ func main() {
 }
 
 func handleListing(listing string) {
-	file, err := os.Open(listing)
+	file, err := os.Open(strings.Replace(listing, ".asm", "", -1))
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 	instruction_reader := bufio.NewReader(file)
 
-	decoded_asm, err := os.Create(fmt.Sprintf("asm_decoded/%s.asm", strings.Split(listing, "/")[1]))
+	decoded_asm, err := os.Create(fmt.Sprintf("asm_decoded/%s", strings.Split(listing, "/")[1]))
 	if err != nil {
 		panic(err)
 	}
