@@ -20,14 +20,13 @@ func DecodeInstructions(instruction_reader *bufio.Reader) <-chan DecodeResult {
 		// max inst length is 6 byte
 		buf := make([]byte, 6)
 
-		requestInstSize := func(n int) []byte {
-			remaining := make([]byte, n-1)
-			_, err := instruction_reader.Read(remaining)
+		requestFurtherBytes := func(n int) []byte {
+			additional := make([]byte, n)
+			_, err := instruction_reader.Read(additional)
 			if err != nil {
 				panic(err)
 			}
-			copy(buf[1:], remaining)
-			return buf[:n]
+			return additional
 		}
 
 		for {
@@ -46,10 +45,10 @@ func DecodeInstructions(instruction_reader *bufio.Reader) <-chan DecodeResult {
 			var currentInst util.InstructionType
 			switch opcode {
 			case fields.MovRmToFromReg:
-				currentInst, err = instructions.DecodeMovRmToFromReg(firstByte, opcode, requestInstSize)
+				currentInst, err = instructions.DecodeMovRmToFromReg(firstByte, opcode, requestFurtherBytes)
 				break
 			case fields.MovImmediateToReg:
-				currentInst, err = instructions.DecodeMovImmediateToReg(firstByte, opcode, requestInstSize)
+				currentInst, err = instructions.DecodeMovImmediateToReg(firstByte, opcode, requestFurtherBytes)
 				break
 			default:
 				panic(fmt.Errorf("unexpected opcode %s", opcode))

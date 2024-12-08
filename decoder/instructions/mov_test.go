@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDecodeMovRmToFromReg(t *testing.T) {
+func TestDecodeMovRegToFromReg(t *testing.T) {
 	raw := []byte{
 		// | opcode d w | mod reg r/m |
 		// | 100010 0 1 | 11  110 011 |
@@ -17,7 +17,7 @@ func TestDecodeMovRmToFromReg(t *testing.T) {
 	}
 
 	inst, _ := DecodeMovRmToFromReg(raw[0], fields.MovRmToFromReg, func(i int) []byte {
-		return raw
+		return raw[1:]
 	})
 	assert.Equal(t,
 		MovRmToFromRegInstruction{
@@ -34,6 +34,83 @@ func TestDecodeMovRmToFromReg(t *testing.T) {
 	)
 }
 
+func TestDecodeMovRegToFromMemoryDispByte(t *testing.T) {
+	raw := []byte{
+		// | opcode d w | mod reg r/m | disp |
+		// | 100010 0 0 | 01  101 110 | 1    |
+		util.FromBitstring("10001000"),
+		util.FromBitstring("01101110"),
+		util.FromBitstring("00000001"),
+	}
+
+	firstTime := true
+
+	inst, _ := DecodeMovRmToFromReg(raw[0], fields.MovRmToFromReg, func(i int) []byte {
+		if firstTime {
+			firstTime = false
+			return raw[1:2]
+		} else {
+			return raw[2:]
+		}
+	})
+	assert.Equal(t,
+		MovRmToFromRegInstruction{
+			Raw:     raw,
+			InstBuf: "10001000 01101110 00000001",
+			Opcode:  fields.MovRmToFromReg,
+			Mod:     fields.MemoryModeDisplacement8,
+			D:       fields.RegIsSource,
+			W:       fields.Byte,
+			Source:  fields.CH,
+			Dest: &fields.MemoryAddress{
+				Reg1:         fields.BP,
+				Reg2:         0,
+				Displacement: 1,
+			},
+		},
+		inst,
+	)
+}
+
+func TestDecodeMovRegToFromMemoryDispWord(t *testing.T) {
+	raw := []byte{
+		// | opcode d w | mod reg r/m | displo   | disphi   |
+		// | 100010 0 1 | 10  101 110 | 00000001 | 10000000 |
+		util.FromBitstring("10001001"),
+		util.FromBitstring("10101110"),
+		util.FromBitstring("00000001"),
+		util.FromBitstring("10000000"),
+	}
+
+	firstTime := true
+
+	inst, _ := DecodeMovRmToFromReg(raw[0], fields.MovRmToFromReg, func(i int) []byte {
+		if firstTime {
+			firstTime = false
+			return raw[1:2]
+		} else {
+			return raw[2:]
+		}
+	})
+	assert.Equal(t,
+		MovRmToFromRegInstruction{
+			Raw:     raw,
+			InstBuf: "10001001 10101110 00000001 10000000",
+			Opcode:  fields.MovRmToFromReg,
+			Mod:     fields.MemoryModeDisplacement16,
+			D:       fields.RegIsSource,
+			W:       fields.Word,
+			Source:  fields.BP,
+			Dest: &fields.MemoryAddress{
+				Reg1:         fields.BP,
+				Reg2:         0,
+				Displacement: 32769,
+			},
+		},
+		inst,
+	)
+}
+
 func TestDecodeMovImmediateByteToReg(t *testing.T) {
 	raw := []byte{
 		// | opcode d reg | value    |
@@ -43,7 +120,7 @@ func TestDecodeMovImmediateByteToReg(t *testing.T) {
 	}
 
 	inst, _ := DecodeMovImmediateToReg(raw[0], fields.MovRmToFromReg, func(i int) []byte {
-		return raw
+		return raw[1:]
 	})
 	assert.Equal(t,
 		MovImmediateToRegInstruction{
@@ -68,7 +145,7 @@ func TestDecodeMovImmediateWordToReg(t *testing.T) {
 	}
 
 	inst, _ := DecodeMovImmediateToReg(raw[0], fields.MovRmToFromReg, func(i int) []byte {
-		return raw
+		return raw[1:]
 	})
 	assert.Equal(t,
 		MovImmediateToRegInstruction{
