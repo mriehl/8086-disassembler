@@ -17,9 +17,6 @@ type DecodeResult struct {
 func DecodeInstructions(instruction_reader *bufio.Reader) <-chan DecodeResult {
 	ch := make(chan DecodeResult)
 	go func() {
-		// max inst length is 6 byte
-		buf := make([]byte, 6)
-
 		requestFurtherBytes := func(n int) []byte {
 			additional := make([]byte, n)
 			_, err := instruction_reader.Read(additional)
@@ -37,7 +34,6 @@ func DecodeInstructions(instruction_reader *bufio.Reader) <-chan DecodeResult {
 			if err != nil {
 				panic(err)
 			}
-			buf[0] = firstByte
 			opcode, err := fields.DecodeOpcode(firstByte)
 			if err != nil {
 				panic(err)
