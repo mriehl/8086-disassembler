@@ -1,22 +1,19 @@
-package instruction
+package instructions
 
 import (
+	"8086-disassembler/decoder/fields"
 	"8086-disassembler/util"
 	"bufio"
 	"fmt"
 )
 
-type StringerInstruction interface {
-	AsStringInstruction() string
-}
-
 type MovInstruction struct {
 	Raw     []byte
 	InstBuf string
-	Opcode  Opcode
-	Mod     Mod
-	W       W
-	D       D
+	Opcode  fields.Opcode
+	Mod     fields.Mod
+	W       fields.W
+	D       fields.D
 	Source  interface{}
 	Dest    interface{}
 }
@@ -35,31 +32,27 @@ func readSubsequentBytes(n int, buf []byte, reader *bufio.Reader) error {
 	return nil
 }
 
-func DecodeMovInstruction(requestInstSize func(int) []byte) (StringerInstruction, error) {
+func DecodeMovInstruction(opcode fields.Opcode, requestInstSize func(int) []byte) (util.InstructionType, error) {
 	// | ______ _ _ | __  ___ ___ |
 	// | opcode d w | mod reg r/m |
 	raw := requestInstSize(2)
 
 	bits := util.RenderBytes(raw)
 
-	opcode, err := DecodeOpcode(raw[0])
+	mod, err := fields.DecodeMod(raw[1] >> 6 & 0x3)
 	if err != nil {
 		return nil, err
 	}
-	mod, err := DecodeMod(raw[1] >> 6 & 0x3)
+	w, err := fields.DecodeW(raw[0] & 0x1)
 	if err != nil {
 		return nil, err
 	}
-	w, err := DecodeW(raw[0] & 0x1)
-	if err != nil {
-		return nil, err
-	}
-	d, err := DecodeD(raw[0] >> 1 & 0x1)
+	d, err := fields.DecodeD(raw[0] >> 1 & 0x1)
 	if err != nil {
 		return nil, err
 	}
 
-	reg, err := DecodeReg(raw[1]>>3&0x7, w)
+	reg, err := fields.DecodeReg(raw[1]>>3&0x7, w)
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +67,8 @@ func DecodeMovInstruction(requestInstSize func(int) []byte) (StringerInstruction
 	}
 
 	var rm interface{}
-	if mod == RegisterToRegister {
-		rm, err = DecodeReg(raw[1]&0x7, w)
+	if mod == fields.RegisterToRegister {
+		rm, err = fields.DecodeReg(raw[1]&0x7, w)
 		if err != nil {
 			return nil, err
 		}
@@ -83,7 +76,7 @@ func DecodeMovInstruction(requestInstSize func(int) []byte) (StringerInstruction
 		panic("rm is memory address")
 	}
 
-	if d == RegIsDest {
+	if d == fields.RegIsDest {
 		inst.Dest = reg
 		inst.Source = rm
 	} else {

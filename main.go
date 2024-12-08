@@ -1,10 +1,9 @@
 package main
 
 import (
-	"8086-disassembler/instruction"
+	"8086-disassembler/decoder"
 	"bufio"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 )
@@ -38,50 +37,18 @@ func handleListing(listing string) {
 		panic(err)
 	}
 
-	// max inst length is 6 byte
-	buf := make([]byte, 6)
+	for result := range decoder.DecodeInstructions(instruction_reader) {
 
-	requestInstSize := func(n int) []byte {
-		remaining := make([]byte, n-1)
-		_, err := instruction_reader.Read(remaining)
-		if err != nil {
-			panic(err)
-		}
-		copy(buf[1:], remaining)
-		return buf[:n]
-	}
-
-	for {
-		firstByte, err := instruction_reader.ReadByte()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			panic(err)
-		}
-		buf[0] = firstByte
-		opcode, err := instruction.DecodeOpcode(firstByte)
-		if err != nil {
-			panic(err)
-		}
-		var currentInst instruction.StringerInstruction
-		switch opcode {
-		case instruction.Mov:
-			currentInst, err = instruction.DecodeMovInstruction(requestInstSize)
-		case instruction.MovImmediateToReg:
-			panic("immediate mov")
-		default:
-			panic(fmt.Errorf("unexpected opcode %s", opcode))
-		}
-		if err != nil {
+		if result.Error != nil {
 			fmt.Printf("\tINVALID: %v\n", err)
 		} else {
-			inst := strings.ToLower(currentInst.AsStringInstruction())
-			fmt.Printf("%s\t from %+v\n", inst, currentInst)
+			inst := strings.ToLower(result.Value.AsStringInstruction())
+			fmt.Printf("%s\t from %+v\n", inst, result.Value)
 			_, err = decoded_asm_writer.WriteString(inst + "\n")
 			if err != nil {
 				panic(err)
 			}
 		}
+
 	}
 }
