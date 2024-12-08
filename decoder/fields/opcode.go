@@ -8,16 +8,16 @@ import (
 type Opcode int
 
 const (
-	Mov Opcode = iota + 1
+	MovRmToFromReg Opcode = iota + 1
 	MovImmediateToReg
 )
 
 func (op Opcode) String() string {
 	switch op {
-	case Mov:
-		return "MOV"
+	case MovRmToFromReg:
+		return "MovRmToFromReg"
 	case MovImmediateToReg:
-		return "MOV"
+		return "MovImmediateToReg"
 	default:
 		return "Unknown"
 	}
@@ -27,7 +27,7 @@ func DecodeOpcode(firstByte byte) (Opcode, error) {
 	switch {
 	// 100010__
 	case firstByte>>2 == 0x22:
-		return Mov, nil
+		return MovRmToFromReg, nil
 	// 1011____
 	case firstByte>>4 == 0xb:
 		return MovImmediateToReg, nil

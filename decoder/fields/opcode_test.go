@@ -9,5 +9,8 @@ import (
 
 func TestDecodeOpcode(t *testing.T) {
 	opcode, _ := DecodeOpcode(util.FromBitstring("10001000"))
-	assert.Equal(t, Mov, opcode)
+	assert.Equal(t, MovRmToFromReg, opcode)
+
+	opcode, _ = DecodeOpcode(util.FromBitstring("10111000"))
+	assert.Equal(t, MovImmediateToReg, opcode)
 }
