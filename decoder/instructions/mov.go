@@ -2,6 +2,7 @@ package instructions
 
 import (
 	"8086-disassembler/decoder/fields"
+	"8086-disassembler/decoder/types"
 	"8086-disassembler/util"
 	"encoding/binary"
 	"fmt"
@@ -212,4 +213,70 @@ func DecodeMovRmToFromReg(byte1 byte, opcode fields.Opcode, requestFurtherBytes 
 	}
 
 	return inst, nil
+}
+
+type MovAccMem struct {
+	Raw     []byte
+	InstBuf string
+	Opcode  fields.Opcode
+	W       fields.W
+	Source  interface{}
+	Dest    interface{}
+}
+
+func (mov MovAccMem) AsStringInstruction() string {
+	return fmt.Sprintf("mov %s, %s", mov.Dest, mov.Source)
+}
+
+func DecodeMovAccMem(byte1 byte, opcode fields.Opcode, requestFurtherBytes func(int) []byte) (util.InstructionType, error) {
+	// | ______ _   _ | addr-lo | addr-hi |
+	// | 101000 0/1 w | addr-lo | addr-hi |
+
+	rawInst := []byte{byte1}
+
+	w, err := fields.DecodeW(byte1 & 0x1)
+	if err != nil {
+		return nil, err
+	}
+	acc, err := fields.DecodeAcc(w)
+	if err != nil {
+		return nil, err
+	}
+
+	var addr int
+	switch w {
+	case fields.Byte:
+		data := requestFurtherBytes(1)
+		rawInst = slices.Concat(rawInst, data)
+		addr = int(uint8(data[0]))
+	case fields.Word:
+		data := requestFurtherBytes(2)
+		rawInst = slices.Concat(rawInst, data)
+		addr = int(binary.LittleEndian.Uint16(data))
+	default:
+		return nil, fmt.Errorf("unexpected w=%s for mov acc/mem dispatch", w)
+	}
+
+	var source interface{}
+	var dest interface{}
+
+	switch opcode {
+	case fields.MovAccToMem:
+		source = acc
+		dest = types.MemoryAddress{Address: addr}
+	case fields.MovMemToAcc:
+		source = types.MemoryAddress{Address: addr}
+		dest = acc
+	default:
+		return nil, fmt.Errorf("unexpected opcode %s for mov acc/mem dispatch", opcode)
+	}
+
+	return MovAccMem{
+		Raw:     rawInst,
+		InstBuf: util.RenderBytes(rawInst),
+		Opcode:  opcode,
+		W:       w,
+		Source:  source,
+		Dest:    dest,
+	}, nil
 }

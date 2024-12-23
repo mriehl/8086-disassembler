@@ -62,7 +62,7 @@ func TestDecodeMovRegToFromMemoryDispByte(t *testing.T) {
 			D:       fields.RegIsSource,
 			W:       fields.Byte,
 			Source:  fields.CH,
-			Dest: &fields.MemoryAddress{
+			Dest: &fields.MemoryAddressCalculation{
 				Reg1:         fields.BP,
 				Reg2:         0,
 				Displacement: 1,
@@ -101,7 +101,7 @@ func TestDecodeMovRegToFromMemoryDispWord(t *testing.T) {
 			D:       fields.RegIsSource,
 			W:       fields.Word,
 			Source:  fields.BP,
-			Dest: &fields.MemoryAddress{
+			Dest: &fields.MemoryAddressCalculation{
 				Reg1:         fields.BP,
 				Reg2:         0,
 				Displacement: -32767,

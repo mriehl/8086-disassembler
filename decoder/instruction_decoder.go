@@ -17,6 +17,7 @@ type DecodeResult struct {
 func DecodeInstructions(instruction_reader *bufio.Reader) <-chan DecodeResult {
 	ch := make(chan DecodeResult)
 	go func() {
+		// TODO lift inst buffer rendering into this and wrap err?
 		requestFurtherBytes := func(n int) []byte {
 			additional := make([]byte, n)
 			_, err := instruction_reader.Read(additional)
@@ -48,6 +49,11 @@ func DecodeInstructions(instruction_reader *bufio.Reader) <-chan DecodeResult {
 				break
 			case fields.MovImmediateToRegMem:
 				currentInst, err = instructions.DecodeMovImmediateToRegMem(firstByte, opcode, requestFurtherBytes)
+				break
+			case fields.MovAccToMem:
+				fallthrough
+			case fields.MovMemToAcc:
+				currentInst, err = instructions.DecodeMovAccMem(firstByte, opcode, requestFurtherBytes)
 				break
 			default:
 				panic(fmt.Errorf("unexpected opcode %s", opcode))

@@ -11,6 +11,8 @@ const (
 	MovRmToFromReg Opcode = iota + 1
 	MovImmediateToReg
 	MovImmediateToRegMem
+	MovMemToAcc
+	MovAccToMem
 )
 
 func (op Opcode) String() string {
@@ -21,6 +23,11 @@ func (op Opcode) String() string {
 		return "MovImmediateToReg"
 	case MovImmediateToRegMem:
 		return "MovImmediateToRegMem"
+	case MovMemToAcc:
+		return "MovMemToAcc"
+	case MovAccToMem:
+		return "MovAccToMem"
+
 	default:
 		return "Unknown"
 	}
@@ -38,6 +45,12 @@ func DecodeOpcode(firstByte byte) (Opcode, error) {
 		// 1100011_
 	case firstByte>>1 == 0x63:
 		return MovImmediateToRegMem, nil
+		// 1010000
+	case firstByte>>1 == 0x50:
+		return MovMemToAcc, nil
+		// 1010001
+	case firstByte>>1 == 0x51:
+		return MovAccToMem, nil
 	}
 
 	return 0, fmt.Errorf("unknown opcode 0x%X (%s).", firstByte, util.RenderByte(firstByte))

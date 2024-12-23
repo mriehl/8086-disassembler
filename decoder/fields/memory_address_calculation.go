@@ -7,13 +7,13 @@ import (
 	"strings"
 )
 
-type MemoryAddress struct {
+type MemoryAddressCalculation struct {
 	Reg1         Reg
 	Reg2         Reg
 	Displacement int
 }
 
-func (ma MemoryAddress) String() string {
+func (ma MemoryAddressCalculation) String() string {
 	var buf strings.Builder
 	buf.WriteRune('[')
 	if ma.Reg1 > 0 {
@@ -78,8 +78,8 @@ func eac(rm byte) (Reg, Reg) {
 	}
 }
 
-func DecodeMemoryAddress(rm byte, mod Mod, additional []byte) (*MemoryAddress, error) {
-	address := MemoryAddress{}
+func DecodeMemoryAddress(rm byte, mod Mod, additional []byte) (*MemoryAddressCalculation, error) {
+	address := MemoryAddressCalculation{}
 
 	reg1, reg2 := eac(rm)
 	address.Reg1 = reg1
