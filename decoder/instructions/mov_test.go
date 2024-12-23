@@ -104,7 +104,7 @@ func TestDecodeMovRegToFromMemoryDispWord(t *testing.T) {
 			Dest: &fields.MemoryAddress{
 				Reg1:         fields.BP,
 				Reg2:         0,
-				Displacement: 32769,
+				Displacement: -32767,
 			},
 		},
 		inst,

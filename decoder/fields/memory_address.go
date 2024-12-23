@@ -10,7 +10,7 @@ import (
 type MemoryAddress struct {
 	Reg1         Reg
 	Reg2         Reg
-	Displacement uint16
+	Displacement int
 }
 
 func (ma MemoryAddress) String() string {
@@ -22,7 +22,7 @@ func (ma MemoryAddress) String() string {
 	if ma.Reg2 > 0 {
 		buf.WriteString(fmt.Sprintf(" + %s", ma.Reg2.String()))
 	}
-	if ma.Displacement > 0 {
+	if ma.Displacement != 0 {
 		if ma.Reg1 == 0 {
 			buf.WriteString(fmt.Sprintf("%d", ma.Displacement))
 		} else {
@@ -83,13 +83,13 @@ func DecodeMemoryAddress(rm byte, mod Mod, additional []byte) (*MemoryAddress, e
 
 	switch mod {
 	case MemoryModeDisplacement16:
-		address.Displacement = binary.LittleEndian.Uint16(additional)
+		address.Displacement = int(int16(binary.LittleEndian.Uint16(additional)))
 	case MemoryModeDisplacement8:
-		address.Displacement = uint16(additional[0])
+		address.Displacement = int(int8(additional[0]))
 	case MemoryModeNoDisplacement:
 		// rm=110, mod=00 fuckery, direct word
 		if rm == 0x6 {
-			address.Displacement = binary.LittleEndian.Uint16(additional)
+			address.Displacement = int(int16(binary.LittleEndian.Uint16(additional)))
 			address.Reg1 = 0
 			address.Reg2 = 0
 		} else {
