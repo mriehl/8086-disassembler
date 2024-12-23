@@ -43,28 +43,13 @@ func DecodeMovImmediateToRegMem(byte1 byte, opcode fields.Opcode, requestFurther
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO duplicated rm + disp fuckery
 	rawInstruction := []byte{byte1, byte2}
-	var rm interface{}
-	rmSection := byte2 & 0x7
-	if mod == fields.RegisterMode {
-		rm, err = fields.DecodeReg(rmSection, w)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		additionalRequired := fields.DecodeTrailingMemoryLength(rmSection, mod)
-		additionalBytes := requestFurtherBytes(int(additionalRequired))
-		rawInstruction = slices.Concat(rawInstruction, additionalBytes)
-		if additionalRequired > 0 {
-			copy(rawInstruction[2:], additionalBytes)
-		}
-		rm, err = fields.DecodeMemoryAddress(rmSection, mod, additionalBytes)
-		if err != nil {
-			panic(err)
-		}
+
+	eac, err := EAC(byte2&0x7, mod, w, requestFurtherBytes)
+	if err != nil {
+		return nil, fmt.Errorf("cannot calculate EAC for %s: %w", opcode, err)
 	}
+	rawInstruction = slices.Concat(rawInstruction, eac.ReadBytes)
 
 	var immediateValue uint16
 	if w == fields.Byte {
@@ -83,7 +68,7 @@ func DecodeMovImmediateToRegMem(byte1 byte, opcode fields.Opcode, requestFurther
 		Opcode:       opcode,
 		Mod:          mod,
 		W:            w,
-		Dest:         rm,
+		Dest:         eac.EffectiveAddress,
 		SourceValue:  immediateValue,
 		SourceIsWord: w == fields.Word,
 	}, nil
@@ -171,29 +156,13 @@ func DecodeMovRmToFromReg(byte1 byte, opcode fields.Opcode, requestFurtherBytes 
 		return nil, err
 	}
 
-	rawInstruction := make([]byte, 2, 4)
-	rawInstruction[0] = byte1
-	rawInstruction[1] = byte2
+	rawInstruction := []byte{byte1, byte2}
 
-	var rm interface{}
-	rmSection := byte2 & 0x7
-	if mod == fields.RegisterMode {
-		rm, err = fields.DecodeReg(rmSection, w)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		additionalRequired := fields.DecodeTrailingMemoryLength(rmSection, mod)
-		additionalBytes := requestFurtherBytes(int(additionalRequired))
-		rawInstruction = rawInstruction[:additionalRequired+2]
-		if additionalRequired > 0 {
-			copy(rawInstruction[2:], additionalBytes)
-		}
-		rm, err = fields.DecodeMemoryAddress(rmSection, mod, additionalBytes)
-		if err != nil {
-			panic(err)
-		}
+	eac, err := EAC(byte2&0x7, mod, w, requestFurtherBytes)
+	if err != nil {
+		return nil, fmt.Errorf("cannot calculate EAC for %s: %w", opcode, err)
 	}
+	rawInstruction = slices.Concat(rawInstruction, eac.ReadBytes)
 
 	inst := MovRmToFromRegInstruction{
 		Raw:     rawInstruction,
@@ -206,10 +175,10 @@ func DecodeMovRmToFromReg(byte1 byte, opcode fields.Opcode, requestFurtherBytes 
 
 	if d == fields.RegIsDest {
 		inst.Dest = reg
-		inst.Source = rm
+		inst.Source = eac.EffectiveAddress
 	} else {
 		inst.Source = reg
-		inst.Dest = rm
+		inst.Dest = eac.EffectiveAddress
 	}
 
 	return inst, nil

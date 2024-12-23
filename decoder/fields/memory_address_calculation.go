@@ -103,5 +103,4 @@ func DecodeMemoryAddress(rm byte, mod Mod, additional []byte) (*MemoryAddressCal
 	}
 
 	return &address, nil
-
 }
