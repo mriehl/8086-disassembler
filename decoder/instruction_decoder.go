@@ -41,8 +41,12 @@ func DecodeInstructions(instruction_reader *bufio.Reader) <-chan DecodeResult {
 			}
 			opcode, err := fields.DecodeOpcode(firstByte)
 			if err != nil {
-				// TODO should not panic here
-				panic(err)
+				err = fmt.Errorf("error while decoding instruction (read=%s) due to %v", util.RenderBytes(instBytes), err)
+				ch <- DecodeResult{
+					Value: nil,
+					Error: err,
+				}
+				continue
 			}
 			var currentInst util.InstructionType
 			switch opcode {
@@ -73,7 +77,6 @@ func DecodeInstructions(instruction_reader *bufio.Reader) <-chan DecodeResult {
 				Error: err,
 			}
 		}
-
 		close(ch)
 	}()
 	return ch
