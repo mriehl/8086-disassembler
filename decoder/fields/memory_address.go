@@ -26,7 +26,11 @@ func (ma MemoryAddress) String() string {
 		if ma.Reg1 == 0 {
 			buf.WriteString(fmt.Sprintf("%d", ma.Displacement))
 		} else {
-			buf.WriteString(fmt.Sprintf(" + %d", ma.Displacement))
+			if ma.Displacement > 0 {
+				buf.WriteString(fmt.Sprintf(" + %d", ma.Displacement))
+			} else {
+				buf.WriteString(fmt.Sprintf(" %d", ma.Displacement))
+			}
 		}
 	}
 	buf.WriteRune(']')
