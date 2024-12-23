@@ -14,9 +14,9 @@ mov [bp + di], byte 7
 mov [di + 901], word 347
 
 ; Direct address
-;mov bp, [5]
-;mov bx, [3458]
-;
+mov bp, [5]
+mov bx, [3458]
+
 ; Memory-to-accumulator test
 ;mov ax, [2555]
 ;mov ax, [16]
