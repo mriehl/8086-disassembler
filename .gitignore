@@ -15,4 +15,6 @@ go.work.sum
 
 .env
 
-asm_decoded/*.asm
+asm/*
+!asm/*.asm
+asm_decoded/*
