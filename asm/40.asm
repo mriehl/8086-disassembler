@@ -24,3 +24,17 @@ mov ax, [16]
 ; Accumulator-to-memory test
 mov [2554], ax
 mov [15], ax
+
+
+; for completeness
+; rm to sr
+;mov [42], cs
+;mov cs, [999]
+;mov cx, ds
+;mov [di+915], ss
+; sr to rm
+;mov cs, [42]
+;mov cs, [999]
+;mov ds, cx
+;mov [di+915], ss
+;mov ss, [di+915]
