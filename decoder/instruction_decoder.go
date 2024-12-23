@@ -46,6 +46,9 @@ func DecodeInstructions(instruction_reader *bufio.Reader) <-chan DecodeResult {
 			case fields.MovImmediateToReg:
 				currentInst, err = instructions.DecodeMovImmediateToReg(firstByte, opcode, requestFurtherBytes)
 				break
+			case fields.MovImmediateToRegMem:
+				currentInst, err = instructions.DecodeMovImmediateToRegMem(firstByte, opcode, requestFurtherBytes)
+				break
 			default:
 				panic(fmt.Errorf("unexpected opcode %s", opcode))
 			}

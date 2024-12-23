@@ -13,4 +13,7 @@ func TestDecodeOpcode(t *testing.T) {
 
 	opcode, _ = DecodeOpcode(util.FromBitstring("10111000"))
 	assert.Equal(t, MovImmediateToReg, opcode)
+
+	opcode, _ = DecodeOpcode(util.FromBitstring("11000111"))
+	assert.Equal(t, MovImmediateToRegMem, opcode)
 }

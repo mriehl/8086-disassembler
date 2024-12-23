@@ -44,7 +44,7 @@ func handleListing(listing string) {
 	for result := range decoder.DecodeInstructions(instruction_reader) {
 
 		if result.Error != nil {
-			fmt.Printf("\tINVALID: %v\n", err)
+			fmt.Printf("\tINVALID: %s\n", result.Error)
 		} else {
 			inst := strings.ToLower(result.Value.AsStringInstruction())
 			fmt.Printf("%s\t from %+v\n", inst, result.Value)

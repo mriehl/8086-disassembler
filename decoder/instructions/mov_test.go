@@ -24,7 +24,7 @@ func TestDecodeMovRegToFromReg(t *testing.T) {
 			Raw:     raw,
 			InstBuf: "10001001 11110011",
 			Opcode:  fields.MovRmToFromReg,
-			Mod:     fields.RegisterToRegister,
+			Mod:     fields.RegisterMode,
 			D:       fields.RegIsSource,
 			W:       fields.Word,
 			Source:  fields.SI,

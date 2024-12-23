@@ -11,12 +11,12 @@ const (
 	MemoryModeNoDisplacement Mod = iota + 1
 	MemoryModeDisplacement8
 	MemoryModeDisplacement16
-	RegisterToRegister
+	RegisterMode
 )
 
 func (mod Mod) String() string {
 	switch mod {
-	case RegisterToRegister:
+	case RegisterMode:
 		return "RegisterToRegister"
 	case MemoryModeNoDisplacement:
 		return "MemoryModeNoDisplacement"
@@ -38,7 +38,7 @@ func DecodeMod(modSection byte) (Mod, error) {
 		// 10
 		0x2: MemoryModeDisplacement16,
 		// 11
-		0x3: RegisterToRegister,
+		0x3: RegisterMode,
 	}
 
 	mod, ok := mods[modSection]

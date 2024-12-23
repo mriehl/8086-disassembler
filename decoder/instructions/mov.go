@@ -8,6 +8,86 @@ import (
 	"slices"
 )
 
+type MovImmediateToRegMemInstruction struct {
+	Raw          []byte
+	InstBuf      string
+	Opcode       fields.Opcode
+	W            fields.W
+	Mod          fields.Mod
+	Dest         interface{}
+	SourceValue  uint16
+	SourceIsWord bool
+}
+
+func (mov MovImmediateToRegMemInstruction) AsStringInstruction() string {
+	var size string
+	if mov.W == fields.Byte {
+		size = "byte"
+	} else {
+		size = "word"
+	}
+	explicitValue := fmt.Sprintf("%s %d", size, mov.SourceValue)
+	return fmt.Sprintf("mov %s, %s", mov.Dest, explicitValue)
+}
+
+func DecodeMovImmediateToRegMem(byte1 byte, opcode fields.Opcode, requestFurtherBytes func(int) []byte) (util.InstructionType, error) {
+	// | ________ | __  000 ___ | byte    | byte    | byte | byte      |
+	// | 1100011w | mod     r/m | disp-lo | disp-hi | data | data(w=1) |
+	w, err := fields.DecodeW(byte1 & 0x1)
+	if err != nil {
+		return nil, err
+	}
+	var byte2 = requestFurtherBytes(1)[0]
+	mod, err := fields.DecodeMod(byte2 >> 6)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO duplicated rm + disp fuckery
+	rawInstruction := []byte{byte1, byte2}
+	var rm interface{}
+	rmSection := byte2 & 0x7
+	if mod == fields.RegisterMode {
+		rm, err = fields.DecodeReg(rmSection, w)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		additionalRequired := fields.DecodeTrailingMemoryLength(rmSection, mod)
+		additionalBytes := requestFurtherBytes(int(additionalRequired))
+		rawInstruction = slices.Concat(rawInstruction, additionalBytes)
+		if additionalRequired > 0 {
+			copy(rawInstruction[2:], additionalBytes)
+		}
+		rm, err = fields.DecodeMemoryAddress(rmSection, mod, additionalBytes)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	var immediateValue uint16
+	if w == fields.Byte {
+		data := requestFurtherBytes(1)
+		rawInstruction = slices.Concat(rawInstruction, data)
+		immediateValue = uint16(data[0])
+	} else {
+		data := requestFurtherBytes(2)
+		rawInstruction = slices.Concat(rawInstruction, data)
+		immediateValue = binary.LittleEndian.Uint16(data)
+	}
+
+	return MovImmediateToRegMemInstruction{
+		Raw:          rawInstruction,
+		InstBuf:      util.RenderBytes(rawInstruction),
+		Opcode:       opcode,
+		Mod:          mod,
+		W:            w,
+		Dest:         rm,
+		SourceValue:  immediateValue,
+		SourceIsWord: w == fields.Word,
+	}, nil
+}
+
 type MovImmediateToRegInstruction struct {
 	Raw         []byte
 	InstBuf     string
@@ -96,7 +176,7 @@ func DecodeMovRmToFromReg(byte1 byte, opcode fields.Opcode, requestFurtherBytes 
 
 	var rm interface{}
 	rmSection := byte2 & 0x7
-	if mod == fields.RegisterToRegister {
+	if mod == fields.RegisterMode {
 		rm, err = fields.DecodeReg(rmSection, w)
 		if err != nil {
 			return nil, err
