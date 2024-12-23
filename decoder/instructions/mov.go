@@ -6,12 +6,9 @@ import (
 	"8086-disassembler/util"
 	"encoding/binary"
 	"fmt"
-	"slices"
 )
 
 type MovImmediateToRegMemInstruction struct {
-	Raw          []byte
-	InstBuf      string
 	Opcode       fields.Opcode
 	W            fields.W
 	Mod          fields.Mod
@@ -43,28 +40,22 @@ func DecodeMovImmediateToRegMem(byte1 byte, opcode fields.Opcode, requestFurther
 	if err != nil {
 		return nil, err
 	}
-	rawInstruction := []byte{byte1, byte2}
 
 	eac, err := EAC(byte2&0x7, mod, w, requestFurtherBytes)
 	if err != nil {
 		return nil, fmt.Errorf("cannot calculate EAC for %s: %w", opcode, err)
 	}
-	rawInstruction = slices.Concat(rawInstruction, eac.ReadBytes)
 
 	var immediateValue uint16
 	if w == fields.Byte {
 		data := requestFurtherBytes(1)
-		rawInstruction = slices.Concat(rawInstruction, data)
 		immediateValue = uint16(data[0])
 	} else {
 		data := requestFurtherBytes(2)
-		rawInstruction = slices.Concat(rawInstruction, data)
 		immediateValue = binary.LittleEndian.Uint16(data)
 	}
 
 	return MovImmediateToRegMemInstruction{
-		Raw:          rawInstruction,
-		InstBuf:      util.RenderBytes(rawInstruction),
 		Opcode:       opcode,
 		Mod:          mod,
 		W:            w,
@@ -75,8 +66,6 @@ func DecodeMovImmediateToRegMem(byte1 byte, opcode fields.Opcode, requestFurther
 }
 
 type MovImmediateToRegInstruction struct {
-	Raw         []byte
-	InstBuf     string
 	Opcode      fields.Opcode
 	W           fields.W
 	SourceValue uint16
@@ -106,11 +95,7 @@ func DecodeMovImmediateToReg(byte1 byte, opcode fields.Opcode, requestFurtherByt
 
 	reg, err := fields.DecodeReg(byte1&0x7, w)
 
-	raw := slices.Concat([]byte{byte1}, immediate)
-
 	return MovImmediateToRegInstruction{
-		Raw:         raw,
-		InstBuf:     util.RenderBytes(raw),
 		Opcode:      opcode,
 		W:           w,
 		SourceValue: immediateValue,
@@ -119,14 +104,12 @@ func DecodeMovImmediateToReg(byte1 byte, opcode fields.Opcode, requestFurtherByt
 }
 
 type MovRmToFromRegInstruction struct {
-	Raw     []byte
-	InstBuf string
-	Opcode  fields.Opcode
-	Mod     fields.Mod
-	W       fields.W
-	D       fields.D
-	Source  interface{}
-	Dest    interface{}
+	Opcode fields.Opcode
+	Mod    fields.Mod
+	W      fields.W
+	D      fields.D
+	Source interface{}
+	Dest   interface{}
 }
 
 func (mov MovRmToFromRegInstruction) AsStringInstruction() string {
@@ -156,21 +139,16 @@ func DecodeMovRmToFromReg(byte1 byte, opcode fields.Opcode, requestFurtherBytes 
 		return nil, err
 	}
 
-	rawInstruction := []byte{byte1, byte2}
-
 	eac, err := EAC(byte2&0x7, mod, w, requestFurtherBytes)
 	if err != nil {
 		return nil, fmt.Errorf("cannot calculate EAC for %s: %w", opcode, err)
 	}
-	rawInstruction = slices.Concat(rawInstruction, eac.ReadBytes)
 
 	inst := MovRmToFromRegInstruction{
-		Raw:     rawInstruction,
-		InstBuf: util.RenderBytes(rawInstruction),
-		Opcode:  opcode,
-		Mod:     mod,
-		W:       w,
-		D:       d,
+		Opcode: opcode,
+		Mod:    mod,
+		W:      w,
+		D:      d,
 	}
 
 	if d == fields.RegIsDest {
@@ -185,12 +163,10 @@ func DecodeMovRmToFromReg(byte1 byte, opcode fields.Opcode, requestFurtherBytes 
 }
 
 type MovAccMem struct {
-	Raw     []byte
-	InstBuf string
-	Opcode  fields.Opcode
-	W       fields.W
-	Source  interface{}
-	Dest    interface{}
+	Opcode fields.Opcode
+	W      fields.W
+	Source interface{}
+	Dest   interface{}
 }
 
 func (mov MovAccMem) AsStringInstruction() string {
@@ -200,8 +176,6 @@ func (mov MovAccMem) AsStringInstruction() string {
 func DecodeMovAccMem(byte1 byte, opcode fields.Opcode, requestFurtherBytes func(int) []byte) (util.InstructionType, error) {
 	// | ______ _   _ | addr-lo | addr-hi |
 	// | 101000 0/1 w | addr-lo | addr-hi |
-
-	rawInst := []byte{byte1}
 
 	w, err := fields.DecodeW(byte1 & 0x1)
 	if err != nil {
@@ -216,11 +190,9 @@ func DecodeMovAccMem(byte1 byte, opcode fields.Opcode, requestFurtherBytes func(
 	switch w {
 	case fields.Byte:
 		data := requestFurtherBytes(1)
-		rawInst = slices.Concat(rawInst, data)
 		addr = int(uint8(data[0]))
 	case fields.Word:
 		data := requestFurtherBytes(2)
-		rawInst = slices.Concat(rawInst, data)
 		addr = int(binary.LittleEndian.Uint16(data))
 	default:
 		return nil, fmt.Errorf("unexpected w=%s for mov acc/mem dispatch", w)
@@ -241,11 +213,9 @@ func DecodeMovAccMem(byte1 byte, opcode fields.Opcode, requestFurtherBytes func(
 	}
 
 	return MovAccMem{
-		Raw:     rawInst,
-		InstBuf: util.RenderBytes(rawInst),
-		Opcode:  opcode,
-		W:       w,
-		Source:  source,
-		Dest:    dest,
+		Opcode: opcode,
+		W:      w,
+		Source: source,
+		Dest:   dest,
 	}, nil
 }

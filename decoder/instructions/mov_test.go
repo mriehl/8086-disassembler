@@ -21,14 +21,12 @@ func TestDecodeMovRegToFromReg(t *testing.T) {
 	})
 	assert.Equal(t,
 		MovRmToFromRegInstruction{
-			Raw:     raw,
-			InstBuf: "10001001 11110011",
-			Opcode:  fields.MovRmToFromReg,
-			Mod:     fields.RegisterMode,
-			D:       fields.RegIsSource,
-			W:       fields.Word,
-			Source:  fields.SI,
-			Dest:    fields.BX,
+			Opcode: fields.MovRmToFromReg,
+			Mod:    fields.RegisterMode,
+			D:      fields.RegIsSource,
+			W:      fields.Word,
+			Source: fields.SI,
+			Dest:   fields.BX,
 		},
 		inst,
 	)
@@ -55,13 +53,11 @@ func TestDecodeMovRegToFromMemoryDispByte(t *testing.T) {
 	})
 	assert.Equal(t,
 		MovRmToFromRegInstruction{
-			Raw:     raw,
-			InstBuf: "10001000 01101110 00000001",
-			Opcode:  fields.MovRmToFromReg,
-			Mod:     fields.MemoryModeDisplacement8,
-			D:       fields.RegIsSource,
-			W:       fields.Byte,
-			Source:  fields.CH,
+			Opcode: fields.MovRmToFromReg,
+			Mod:    fields.MemoryModeDisplacement8,
+			D:      fields.RegIsSource,
+			W:      fields.Byte,
+			Source: fields.CH,
 			Dest: &fields.MemoryAddressCalculation{
 				Reg1:         fields.BP,
 				Reg2:         0,
@@ -94,13 +90,11 @@ func TestDecodeMovRegToFromMemoryDispWord(t *testing.T) {
 	})
 	assert.Equal(t,
 		MovRmToFromRegInstruction{
-			Raw:     raw,
-			InstBuf: "10001001 10101110 00000001 10000000",
-			Opcode:  fields.MovRmToFromReg,
-			Mod:     fields.MemoryModeDisplacement16,
-			D:       fields.RegIsSource,
-			W:       fields.Word,
-			Source:  fields.BP,
+			Opcode: fields.MovRmToFromReg,
+			Mod:    fields.MemoryModeDisplacement16,
+			D:      fields.RegIsSource,
+			W:      fields.Word,
+			Source: fields.BP,
 			Dest: &fields.MemoryAddressCalculation{
 				Reg1:         fields.BP,
 				Reg2:         0,
@@ -124,8 +118,6 @@ func TestDecodeMovImmediateByteToReg(t *testing.T) {
 	})
 	assert.Equal(t,
 		MovImmediateToRegInstruction{
-			Raw:         raw,
-			InstBuf:     "10110001 00001100",
 			Opcode:      fields.MovRmToFromReg,
 			W:           fields.Byte,
 			SourceValue: 12,
@@ -149,8 +141,6 @@ func TestDecodeMovImmediateWordToReg(t *testing.T) {
 	})
 	assert.Equal(t,
 		MovImmediateToRegInstruction{
-			Raw:         raw,
-			InstBuf:     "10111001 00000001 10000000",
 			Opcode:      fields.MovRmToFromReg,
 			W:           fields.Word,
 			SourceValue: 32769,
