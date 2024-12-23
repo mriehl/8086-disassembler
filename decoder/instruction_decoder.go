@@ -46,7 +46,8 @@ func DecodeInstructions(instruction_reader *bufio.Reader) <-chan DecodeResult {
 					Value: nil,
 					Error: err,
 				}
-				continue
+				// can't continue due to probable trailing inst bytes
+				break
 			}
 			var currentInst util.InstructionType
 			switch opcode {
@@ -64,6 +65,11 @@ func DecodeInstructions(instruction_reader *bufio.Reader) <-chan DecodeResult {
 			case fields.MovMemToAcc:
 				currentInst, err = instructions.DecodeMovAccMem(firstByte, opcode, requestFurtherBytes)
 				break
+			case fields.MovSRToRegMem:
+				fallthrough
+			case fields.MovRegMemToSR:
+				currentInst, err = instructions.DecodeMovRegMemSR(firstByte, opcode, requestFurtherBytes)
+				break
 			default:
 				panic(fmt.Errorf("unexpected opcode %s", opcode))
 			}
@@ -75,6 +81,10 @@ func DecodeInstructions(instruction_reader *bufio.Reader) <-chan DecodeResult {
 			ch <- DecodeResult{
 				Value: currentInst,
 				Error: err,
+			}
+			if err != nil {
+				// can't continue due to probable trailing inst bytes
+				break
 			}
 		}
 		close(ch)

@@ -28,13 +28,12 @@ mov [15], ax
 
 ; for completeness
 ; rm to sr
-;mov [42], cs
-;mov cs, [999]
-;mov cx, ds
-;mov [di+915], ss
+mov [42], cs
+mov [999], cs
+mov [di+915], ss
+mov [bx], ds
 ; sr to rm
-;mov cs, [42]
-;mov cs, [999]
-;mov ds, cx
-;mov [di+915], ss
-;mov ss, [di+915]
+mov cs, [42]
+mov cs, [999]
+mov ss, [di+915]
+mov ds, [si]

@@ -219,3 +219,58 @@ func DecodeMovAccMem(byte1 byte, opcode fields.Opcode, requestFurtherBytes func(
 		Dest:   dest,
 	}, nil
 }
+
+type MovRegMemSR struct {
+	Opcode fields.Opcode
+	Mod    fields.Mod
+	SR     fields.SR
+	Source interface{}
+	Dest   interface{}
+}
+
+func (mov MovRegMemSR) AsStringInstruction() string {
+	return fmt.Sprintf("mov %s, %s", mov.Dest, mov.Source)
+}
+
+func DecodeMovRegMemSR(byte1 byte, opcode fields.Opcode, requestFurtherBytes func(int) []byte) (util.InstructionType, error) {
+	// | ______  _  _ | __  0 __ ___  | disp-lo | disp-hi |
+	// | 100011 0/1 0 | mod 0 SR r/m  | disp-lo | disp-hi |
+	byte2 := requestFurtherBytes(1)[0]
+	mod, err := fields.DecodeMod(byte2 >> 6)
+	if err != nil {
+		return nil, err
+	}
+	sr, err := fields.DecodeSR(byte2 >> 3 & 0x3)
+	if err != nil {
+		return nil, err
+	}
+
+	// always 16 bit address here
+	eac, err := EAC(byte2&0x7, mod, fields.Word, requestFurtherBytes)
+	if err != nil {
+		return nil, fmt.Errorf("cannot calculate EAC for %s: %w", opcode, err)
+	}
+	fmt.Printf("eac=%s\n", eac.EffectiveAddress)
+
+	var source interface{}
+	var dest interface{}
+
+	switch opcode {
+	case fields.MovRegMemToSR:
+		source = eac.EffectiveAddress
+		dest = sr
+	case fields.MovSRToRegMem:
+		source = sr
+		dest = eac.EffectiveAddress
+	default:
+		return nil, fmt.Errorf("unexpected opcode %s for mov acc/mem dispatch", opcode)
+	}
+
+	return MovRegMemSR{
+		Opcode: opcode,
+		Mod:    mod,
+		SR:     sr,
+		Source: source,
+		Dest:   dest,
+	}, nil
+}
